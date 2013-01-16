@@ -1,32 +1,40 @@
 package de.saxsys.saxnet;
 
-import javafx.application.Application;
+import java.io.IOException;
+import java.io.InputStream;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class SaxnetApplication extends Application {
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 
-	public static Stage stage;
+import fr.brouillard.javafx.weld.StartupScene;
 
-	public static void main(String[] args) {
-		launch(args);
-	}
+public class SaxnetApplication {
+	@Inject
+	private FXMLLoader fxmlLoader;
 
-	@Override
-	public void start(Stage _stage) throws Exception {
-		stage = _stage;
-		Parent root = FXMLLoader.load(getClass().getResource("saxnet.fxml"));
+	public void launchJavaFXApplication(@Observes @StartupScene Stage stage) {
+		InputStream is = null;
 
-		stage.setTitle("Saxnet");
-		stage.setScene(new Scene(root));
-		stage.show();
-	}
-
-	@Override
-	public void stop() throws Exception {
-		super.stop();
-		NeoDB.getInstance().shutdown();
+		try {
+			is = getClass().getResourceAsStream("saxnet.fxml");
+			Parent root = (Parent) fxmlLoader.load(is);
+			stage.setTitle("Saxnet");
+			stage.setScene(new Scene(root, 600, 475));
+			stage.show();
+		} catch (IOException e) {
+			throw new IllegalStateException("cannot load FXML", e);
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+				}
+			}
+		}
 	}
 }

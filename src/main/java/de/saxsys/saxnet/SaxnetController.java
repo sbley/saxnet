@@ -3,6 +3,7 @@ package de.saxsys.saxnet;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.application.Application.Parameters;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -11,12 +12,21 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
+
+import de.saxsys.saxnet.db.Neo4J;
+import de.saxsys.saxnet.fx.AddPopup;
+import de.saxsys.saxnet.fx.AddPopupCallback;
+import fr.brouillard.javafx.weld.StartupScene;
 
 public class SaxnetController implements Initializable {
 	@FXML
@@ -34,6 +44,14 @@ public class SaxnetController implements Initializable {
 	@FXML
 	private Button btnCreate;
 
+	private Stage stage;
+
+	@Inject
+	private Parameters applicationParameters;
+
+	@Inject
+	private Neo4J neo4j;
+
 	private static enum RelTypes implements RelationshipType {
 		WORKS_AT, KNOWS
 	}
@@ -46,7 +64,7 @@ public class SaxnetController implements Initializable {
 				.addListener(new InvalidationListener() {
 					@Override
 					public void invalidated(Observable observable) {
-						ReadOnlyObjectProperty<String> prop = (ReadOnlyObjectProperty) observable;
+						ReadOnlyObjectProperty<String> prop = (ReadOnlyObjectProperty<String>) observable;
 						String employee = prop.getValue();
 						showRelatedEmployees(employee);
 						// TODO showNotRelatedEmployees(employee);
@@ -56,6 +74,7 @@ public class SaxnetController implements Initializable {
 
 	public void loadEmployees() {
 		Node node1 = NeoDB.getInstance().getNodeById(0);
+		Iterable<Relationship> relationships = node1.getRelationships();
 		Iterable<Relationship> relationships = node1
 				.getRelationships(RelTypes.WORKS_AT);
 		for (Relationship rel : relationships) {
@@ -73,7 +92,7 @@ public class SaxnetController implements Initializable {
 			}
 		};
 		AddPopup popup = new AddPopup(this, "", callback);
-		popup.show(SaxnetApplication.stage);
+		popup.show(stage);
 
 		double x = popup.getOwnerWindow().getX() + btnCreate.getLayoutX();
 		double y = popup.getOwnerWindow().getY() + btnCreate.getLayoutY()
@@ -88,9 +107,9 @@ public class SaxnetController implements Initializable {
 	}
 
 	public void createEmployee(String name) {
-		Transaction tx = NeoDB.getInstance().beginTx();
-		Node node = NeoDB.getInstance().createNode();
-		Node companyNode = NeoDB.getInstance().getNodeById(0);
+		Transaction tx = neo4j.db().beginTx();
+		Node node = neo4j.db().createNode();
+		Node companyNode = neo4j.db().getNodeById(0);
 		node.setProperty("name", name);
 		node.createRelationshipTo(companyNode, RelTypes.WORKS_AT);
 		tx.success();
@@ -110,7 +129,7 @@ public class SaxnetController implements Initializable {
 			}
 		};
 		AddPopup popup = new AddPopup(this, oldName, callback);
-		popup.show(SaxnetApplication.stage);
+		popup.show(stage);
 
 		double x = popup.getOwnerWindow().getX() + btnCreate.getLayoutX();
 		double y = popup.getOwnerWindow().getY() + btnCreate.getLayoutY()
@@ -150,7 +169,7 @@ public class SaxnetController implements Initializable {
 	}
 
 	/**
-	 * Stellt Verbindung her aus ausgew√§hlten Employee (linke Liste) und rechten
+	 * Stellt Verbindung her aus ausgew‰hlten Employee (linke Liste) und rechten
 	 * unteren Liste
 	 */
 	@FXML
@@ -191,8 +210,8 @@ public class SaxnetController implements Initializable {
 		System.out.println("show relative employees to " + employee);
 		listRelativeEmployees.getItems().clear();
 		if (null != employee) {
-			Transaction tx = NeoDB.getInstance().beginTx();
-			Node companyNode = NeoDB.getInstance().getNodeById(0);
+			Transaction tx = neo4j.db().beginTx();
+			Node companyNode = neo4j.db().getNodeById(0);
 			for (Relationship rel : companyNode.getRelationships()) {
 				if (employee.equals((String) rel.getStartNode().getProperty(
 						"name"))) {
@@ -222,5 +241,9 @@ public class SaxnetController implements Initializable {
 
 	public String getSelectedEmployee() {
 		return listEmployees.getSelectionModel().getSelectedItem();
+	}
+
+	public void setStage(@Observes @StartupScene Stage stage) {
+		this.stage = stage;
 	}
 }

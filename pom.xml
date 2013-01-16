@@ -19,21 +19,25 @@
 			<scope>system</scope>
 			<systemPath>${jdk.dir}/lib/jfxrt.jar</systemPath>
 		</dependency>
+		<!-- 
+		<dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>javafx-runtime</artifactId>
+            <version>2.2</version>
+            <scope>system</scope>
+            <systemPath>${javaFX.dir}\rt\lib\jfxrt.jar</systemPath>
+        </dependency>
+         -->
+		<dependency>
+			<groupId>org.jboss.weld.se</groupId>
+			<artifactId>weld-se</artifactId>
+			<version>1.1.10.Final</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.0.7</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>1.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.miglayout</groupId>
@@ -50,8 +54,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 		</plugins>
