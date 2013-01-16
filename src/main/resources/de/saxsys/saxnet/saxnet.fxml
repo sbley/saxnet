@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml" fx:controller="de.saxsys.saxnet.SaxnetController">
+  <children>
+    <ListView fx:id="listEmployees" layoutX="14.0" layoutY="14.0" prefHeight="372.0" prefWidth="199.0" />
+    <Label fx:id="lblName" layoutX="300.0" layoutY="14.0" text="Name:" />
+    <TextField id="txtName" fx:id="txtName" layoutX="335.0" layoutY="14.0" prefWidth="200.0" />
+    <Button id="btnAdd" fx:id="btnCreate" layoutX="300.0" layoutY="36.0" mnemonicParsing="false" onAction="#handleCreateEmployee" text="Create" />
+  </children>
+</AnchorPane>
