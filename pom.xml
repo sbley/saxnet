@@ -19,15 +19,6 @@
 			<scope>system</scope>
 			<systemPath>${jdk.dir}/lib/jfxrt.jar</systemPath>
 		</dependency>
-		<!-- 
-		<dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>javafx-runtime</artifactId>
-            <version>2.2</version>
-            <scope>system</scope>
-            <systemPath>${javaFX.dir}\rt\lib\jfxrt.jar</systemPath>
-        </dependency>
-         -->
 		<dependency>
 			<groupId>org.jboss.weld.se</groupId>
 			<artifactId>weld-se</artifactId>
@@ -60,12 +51,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
-		<!--<repository> <id>central</id> <name>Saxonia External Proxy Group</name> 
-			<url>http://nexus.saxsys.de/content/groups/external</url> <snapshots> <enabled>true</enabled> 
-			</snapshots> <releases> <enabled>true</enabled> </releases> </repository> 
-			<repository> <id>internal</id> <name>Saxonia Internal Repository</name> <url>http://nexus.saxsys.de/content/repositories/internal</url> 
-			<snapshots> <enabled>true</enabled> </snapshots> <releases> <enabled>true</enabled> 
-			</releases> </repository> -->
-	</repositories>
 </project>

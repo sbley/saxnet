@@ -73,8 +73,7 @@ public class SaxnetController implements Initializable {
 	}
 
 	public void loadEmployees() {
-		Node node1 = NeoDB.getInstance().getNodeById(0);
-		Iterable<Relationship> relationships = node1.getRelationships();
+		Node node1 = neo4j.db().getNodeById(0);
 		Iterable<Relationship> relationships = node1
 				.getRelationships(RelTypes.WORKS_AT);
 		for (Relationship rel : relationships) {
@@ -151,8 +150,8 @@ public class SaxnetController implements Initializable {
 	@FXML
 	public void handleRemoveEmployee() {
 		listEmployees.getItems().remove(this.getSelectedEmployee());
-		Transaction tx = NeoDB.getInstance().beginTx();
-		Node companyNode = NeoDB.getInstance().getNodeById(0);
+		Transaction tx = neo4j.db().beginTx();
+		Node companyNode = neo4j.db().getNodeById(0);
 		for (Relationship relWorksAt : companyNode.getRelationships()) {
 			if (this.getSelectedEmployee().equals(
 					(String) relWorksAt.getStartNode().getProperty("name"))) {
@@ -169,13 +168,13 @@ public class SaxnetController implements Initializable {
 	}
 
 	/**
-	 * Stellt Verbindung her aus ausgewählten Employee (linke Liste) und rechten
+	 * Stellt Verbindung her aus ausgewï¿½hlten Employee (linke Liste) und rechten
 	 * unteren Liste
 	 */
 	@FXML
 	public void handleCreateRelation() {
-		Transaction tx = NeoDB.getInstance().beginTx();
-		Node companyNode = NeoDB.getInstance().getNodeById(0);
+		Transaction tx = neo4j.db().beginTx();
+		Node companyNode = neo4j.db().getNodeById(0);
 		Node selectedEmployeeNode = null;
 		Node selectedNotRelatedEmployeeNode = null;
 		for (Relationship relWorksAt : companyNode.getRelationships()) {
@@ -244,6 +243,7 @@ public class SaxnetController implements Initializable {
 	}
 
 	public void setStage(@Observes @StartupScene Stage stage) {
+		// FIXME stage is null when clicking on [+] button
 		this.stage = stage;
 	}
 }
