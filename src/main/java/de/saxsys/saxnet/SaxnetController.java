@@ -47,7 +47,12 @@ public class SaxnetController implements Initializable
 
     public void insertEmployees()
     {
-        listEmployees.getItems().addAll("Sebastian", "Alex");
+        //listEmployees.getItems().addAll("Sebastian", "Alex");
+        Transaction tx = NeoDB.getInstance().beginTx();
+        Node node1 = NeoDB.getInstance().getNodeById(1);
+        tx.success();
+        listEmployees.getItems().addAll(
+                new String[] { (String) node1.getProperty("name") });
     }
 
     @FXML

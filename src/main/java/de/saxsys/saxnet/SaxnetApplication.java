@@ -6,13 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-
-public class SaxnetApplication extends Application
-{
-    public static Stage stage;
-    //private GraphDatabaseService graphDb;
+public class SaxnetApplication extends Application {
 
 	public static void main(String[] args) {
 		launch(args);
@@ -22,9 +16,6 @@ public class SaxnetApplication extends Application
     public void start(Stage _stage) throws Exception
     {
         stage = _stage;
-
-		graphDb = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(
-				"target/database/location").newGraphDatabase();
 
 		// primaryStage.setTitle("Hello World!");
 		// Button btn = new Button();
@@ -52,6 +43,6 @@ public class SaxnetApplication extends Application
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		graphDb.shutdown();
+		NeoDB.getInstance().shutdown();
 	}
 }
