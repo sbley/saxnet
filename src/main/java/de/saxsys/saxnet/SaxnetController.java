@@ -51,17 +51,13 @@ public class SaxnetController implements Initializable {
 	}
 
 	public void insertEmployees() {
-		// listEmployees.getItems().addAll("Sebastian", "Alex");
-		Transaction tx = NeoDB.getInstance().beginTx();
 		Node node1 = NeoDB.getInstance().getNodeById(0);
-		Iterable<Relationship> relationships = node1.getRelationships();
+		Iterable<Relationship> relationships = node1
+				.getRelationships(RelTypes.WORKS_AT);
 		for (Relationship rel : relationships) {
 			listEmployees.getItems().add(
 					(String) rel.getStartNode().getProperty("name"));
-
 		}
-		tx.success();
-		tx.finish();
 	}
 
 	@FXML
@@ -133,6 +129,21 @@ public class SaxnetController implements Initializable {
 	public void handleRemoveEmployee() {
 		String item = listEmployees.getSelectionModel().getSelectedItem();
 		listEmployees.getItems().remove(item);
+		Transaction tx = NeoDB.getInstance().beginTx();
+		Node companyNode = NeoDB.getInstance().getNodeById(0);
+		for (Relationship relWorksAt : companyNode.getRelationships()) {
+			if (item.equals((String) relWorksAt.getStartNode().getProperty(
+					"name"))) {
+				for (Relationship rel : relWorksAt.getStartNode()
+						.getRelationships()) {
+					rel.delete();
+				}
+				relWorksAt.getStartNode().delete();
+				break;
+			}
+		}
+		tx.success();
+		tx.finish();
 
 	}
 
@@ -143,9 +154,7 @@ public class SaxnetController implements Initializable {
 		if (null != employee) {
 			Transaction tx = NeoDB.getInstance().beginTx();
 			Node companyNode = NeoDB.getInstance().getNodeById(0);
-			Iterable<Relationship> relationships = companyNode
-					.getRelationships();
-			for (Relationship rel : relationships) {
+			for (Relationship rel : companyNode.getRelationships()) {
 				if (employee.equals((String) rel.getStartNode().getProperty(
 						"name"))) {
 					Iterable<Relationship> relKnows = rel.getStartNode()
