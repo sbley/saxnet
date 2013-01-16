@@ -16,11 +16,9 @@
 			<groupId>com.oracle</groupId>
 			<artifactId>javafx-runtime</artifactId>
 			<version>2.2</version>
-			<!-- 
-			<scope>system</scope> 
+            <scope>system</scope>
 			<systemPath>${javaFX.dir}\rt\lib\jfxrt.jar</systemPath> 
-			-->
-		</dependency>
+        </dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -56,7 +54,7 @@
 		</plugins>
 	</build>
 	<repositories>
-		<repository>
+		<!--<repository>
 			<id>central</id>
 			<name>Saxonia External Proxy Group</name>
 			<url>http://nexus.saxsys.de/content/groups/external</url>
@@ -77,6 +75,6 @@
 			<releases>
 				<enabled>true</enabled>
 			</releases>
-		</repository>
+		</repository>    -->
 	</repositories>
 </project>
