@@ -19,8 +19,6 @@ public class SaxnetController implements Initializable {
 	@FXML
 	private TextField txtName;
 
-	private EmployeeRepository employeeRepo;
-
 	@Override
 	public void initialize(URL url, ResourceBundle bundle) {
 		insertEmployees();
@@ -30,7 +28,7 @@ public class SaxnetController implements Initializable {
 		// "Sebastian", "Alex"
 		Transaction tx = NeoDB.getInstance().beginTx();
 		Node node1 = NeoDB.getInstance().getNodeById(1);
-		tx.finish();
+		tx.success();
 		listEmployees.getItems().addAll(
 				new String[] { (String) node1.getProperty("name") });
 	}
