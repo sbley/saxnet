@@ -1,5 +1,8 @@
 package de.saxsys.saxnet;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -8,143 +11,132 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import org.neo4j.graphdb.*;
 
-import java.net.URL;
-import java.util.ResourceBundle;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 
-public class SaxnetController implements Initializable
-{
-    @FXML
-    private ListView<String> listEmployees;
+public class SaxnetController implements Initializable {
+	@FXML
+	private ListView<String> listEmployees;
 
-    @FXML
-    private ListView<String> listNotRelativeEmployees;
+	@FXML
+	private ListView<String> listNotRelativeEmployees;
 
-    @FXML
-    private ListView<String> listRelativeEmployees;
+	@FXML
+	private ListView<String> listRelativeEmployees;
 
-    private String selectedNotRelatedEmployee;
-    @FXML
-    private TextField txtName;
+	@FXML
+	private TextField txtName;
 
-    @FXML
-    private Button btnCreate;
+	@FXML
+	private Button btnCreate;
 
-    private static enum RelTypes implements RelationshipType
-    {
-        WORKS_AT, KNOWS
-    }
+	private static enum RelTypes implements RelationshipType {
+		WORKS_AT, KNOWS
+	}
 
-    @Override
-    public void initialize(URL url, ResourceBundle bundle)
-    {
-//        insertEmployees();
+	@Override
+	public void initialize(URL url, ResourceBundle bundle) {
+		loadEmployees();
 
-        listEmployees.getSelectionModel().selectedItemProperty()
-                .addListener(new InvalidationListener()
-                {
-                    @Override
-                    public void invalidated(Observable observable)
-                    {
-                        ReadOnlyObjectProperty prop = (ReadOnlyObjectProperty) observable;
-                        String employee = (String) prop.getValue();
-                        showRelatedEmployees(employee);
-                    }
-                });
-    }
-public void insertEmployees() {
+		listEmployees.getSelectionModel().selectedItemProperty()
+				.addListener(new InvalidationListener() {
+					@Override
+					public void invalidated(Observable observable) {
+						ReadOnlyObjectProperty<String> prop = (ReadOnlyObjectProperty) observable;
+						String employee = prop.getValue();
+						showRelatedEmployees(employee);
+						// TODO showNotRelatedEmployees(employee);
+					}
+				});
+	}
+
+	public void loadEmployees() {
 		Node node1 = NeoDB.getInstance().getNodeById(0);
 		Iterable<Relationship> relationships = node1
 				.getRelationships(RelTypes.WORKS_AT);
 		for (Relationship rel : relationships) {
 			listEmployees.getItems().add(
-					(String) rel.getStartNode().getProperty("name"));		}
-}
-        }
-        tx.success();
-        tx.finish();
-    }
+					(String) rel.getStartNode().getProperty("name"));
+		}
+	}
 
-    @FXML
-    public void handleCreateEmployee()
-    {
-        AddPopupCallback callback = new AddPopupCallback()
-        {
-            @Override
-            public void valueChanged(String value)
-            {
-                createEmployee(value);
-            }
-        };
-        AddPopup popup = new AddPopup(this, "", callback);
-        popup.show(SaxnetApplication.stage);
+	@FXML
+	public void handleCreateEmployee() {
+		AddPopupCallback callback = new AddPopupCallback() {
+			@Override
+			public void valueChanged(String value) {
+				createEmployee(value);
+			}
+		};
+		AddPopup popup = new AddPopup(this, "", callback);
+		popup.show(SaxnetApplication.stage);
 
-        double x = popup.getOwnerWindow().getX() + btnCreate.getLayoutX();
-        double y = popup.getOwnerWindow().getY() + btnCreate.getLayoutY()
-                + btnCreate.getHeight() - 0;
+		double x = popup.getOwnerWindow().getX() + btnCreate.getLayoutX();
+		double y = popup.getOwnerWindow().getY() + btnCreate.getLayoutY()
+				+ btnCreate.getHeight() - 0;
 
-        if (!popup.isShowing())
-        {
-            popup.show(popup.getOwnerWindow());
-        }
+		if (!popup.isShowing()) {
+			popup.show(popup.getOwnerWindow());
+		}
 
-        popup.show(btnCreate, x, y);
+		popup.show(btnCreate, x, y);
 
-    }
+	}
 
-    public void createEmployee(String name)
-    {
-        Transaction tx = NeoDB.getInstance().beginTx();
-        Node node = NeoDB.getInstance().createNode();
-        Node companyNode = NeoDB.getInstance().getNodeById(0);
-        node.setProperty("name", name);
-        node.createRelationshipTo(companyNode, RelTypes.WORKS_AT);
-        tx.success();
-        tx.finish();
-        listEmployees.getItems().add(name);
-    }
+	public void createEmployee(String name) {
+		Transaction tx = NeoDB.getInstance().beginTx();
+		Node node = NeoDB.getInstance().createNode();
+		Node companyNode = NeoDB.getInstance().getNodeById(0);
+		node.setProperty("name", name);
+		node.createRelationshipTo(companyNode, RelTypes.WORKS_AT);
+		tx.success();
+		tx.finish();
+		listEmployees.getItems().add(name);
+	}
 
-    @FXML
-    public void handleEditEmployee()
-    {
-        final String oldName = listEmployees.getSelectionModel()
-                .getSelectedItem();
+	@FXML
+	public void handleEditEmployee() {
+		final String oldName = listEmployees.getSelectionModel()
+				.getSelectedItem();
 
-        AddPopupCallback callback = new AddPopupCallback()
-        {
-            @Override
-            public void valueChanged(String newName)
-            {
-                editEmployee(oldName, newName);
-            }
-        };
-        AddPopup popup = new AddPopup(this, oldName, callback);
-        popup.show(SaxnetApplication.stage);
+		AddPopupCallback callback = new AddPopupCallback() {
+			@Override
+			public void valueChanged(String newName) {
+				editEmployee(oldName, newName);
+			}
+		};
+		AddPopup popup = new AddPopup(this, oldName, callback);
+		popup.show(SaxnetApplication.stage);
 
-        double x = popup.getOwnerWindow().getX() + btnCreate.getLayoutX();
-        double y = popup.getOwnerWindow().getY() + btnCreate.getLayoutY()
-                + btnCreate.getHeight() - 0;
+		double x = popup.getOwnerWindow().getX() + btnCreate.getLayoutX();
+		double y = popup.getOwnerWindow().getY() + btnCreate.getLayoutY()
+				+ btnCreate.getHeight() - 0;
 
-        if (!popup.isShowing())
-        {
-            popup.show(popup.getOwnerWindow());
-        }
+		if (!popup.isShowing()) {
+			popup.show(popup.getOwnerWindow());
+		}
 
-        popup.show(btnCreate, x, y);
+		popup.show(btnCreate, x, y);
 
-    }
+	}
 
-    public void editEmployee(String oldName, String newName)
-    {
-        listEmployees.getItems().set(listEmployees.getItems().indexOf(oldName),
-                newName);
-    }
+	public void editEmployee(String oldName, String newName) {
+		listEmployees.getItems().set(listEmployees.getItems().indexOf(oldName),
+				newName);
+	}
+
+	@FXML
+	public void handleRemoveEmployee() {
+		listEmployees.getItems().remove(this.getSelectedEmployee());
 		Transaction tx = NeoDB.getInstance().beginTx();
 		Node companyNode = NeoDB.getInstance().getNodeById(0);
 		for (Relationship relWorksAt : companyNode.getRelationships()) {
-			if (item.equals((String) relWorksAt.getStartNode().getProperty(
-					"name"))) {
+			if (this.getSelectedEmployee().equals(
+					(String) relWorksAt.getStartNode().getProperty("name"))) {
 				for (Relationship rel : relWorksAt.getStartNode()
 						.getRelationships()) {
 					rel.delete();
@@ -155,89 +147,46 @@ public void insertEmployees() {
 		}
 		tx.success();
 		tx.finish();
+	}
 
-    @FXML
-    public void handleRemoveEmployee()
-    {
-        listEmployees.getItems().remove(this.getSelectedEmployee());
-    }
+	/**
+	 * Stellt Verbindung her aus ausgew√§hlten Employee (linke Liste) und rechten
+	 * unteren Liste
+	 */
+	@FXML
+	public void handleCreateRelation() {
+		Transaction tx = NeoDB.getInstance().beginTx();
+		Node companyNode = NeoDB.getInstance().getNodeById(0);
+		Node selectedEmployeeNode = null;
+		Node selectedNotRelatedEmployeeNode = null;
+		for (Relationship relWorksAt : companyNode.getRelationships()) {
+			if (this.getSelectedEmployee().equals(
+					(String) relWorksAt.getStartNode().getProperty("name"))) {
+				selectedEmployeeNode = relWorksAt.getStartNode();
+			} else if (this.getSelectedNotRelatedEmployee().equals(
+					(String) relWorksAt.getStartNode().getProperty("name"))) {
+				selectedNotRelatedEmployeeNode = relWorksAt.getStartNode();
+			}
+		}
 
-    public String getSelectedEmployee()
-    {
-        return listEmployees.getSelectionModel().getSelectedItem();
-    }
+		selectedEmployeeNode.createRelationshipTo(
+				selectedNotRelatedEmployeeNode, RelTypes.KNOWS);
+		tx.success();
+		tx.finish();
 
-    @FXML
-    //Stellt Verbindung her aus ausgew‰hlten Employee (linke Liste) und rechten unteren Liste
-    public void handleCreateRelation()
-    {
-        String employee = this.getSelectedEmployee();
-        String notYetRelatedPerson = this.getSelectedNotRelatedEmployee();
+	}
 
-        System.out.println("notYetRelatedPerson = " + notYetRelatedPerson);
+	@FXML
+	public void handleRemoveRelation() {
+		String employee = this.getSelectedEmployee();
+		String relatedPerson = this.getSelectedRelatedEmployee();
 
-        //todo: save relation in DB
+		System.out.println("relatedPerson = " + relatedPerson);
 
-    }
+		// TODO: remove relation in DB
 
-    @FXML
-    public void handleRemoveRelation()
-    {
-        String employee = this.getSelectedEmployee();
-        String relatedPerson = this.getSelectedRelatedEmployee();
+	}
 
-        System.out.println("relatedPerson = " + relatedPerson);
-
-        //todo: remove relation in DB
-
-    }
-
-    public void showRelatedEmployees(String employee)
-    {
-        System.out.println("show relative employees to " + employee);
-        listRelativeEmployees.getItems().clear();
-        if (null != employee)
-        {
-            Transaction tx = NeoDB.getInstance().beginTx();
-            Node companyNode = NeoDB.getInstance().getNodeById(0);
-            Iterable<Relationship> relationships = companyNode
-                    .getRelationships();
-            for (Relationship rel : relationships)
-            {
-                if (employee.equals((String) rel.getStartNode().getProperty(
-                        "name")))
-                {
-                    Iterable<Relationship> relKnows = rel.getStartNode()
-                            .getRelationships(RelTypes.KNOWS,
-                                    Direction.OUTGOING);
-                    for (Relationship relK : relKnows)
-                    {
-                        listRelativeEmployees.getItems().add(
-                                (String) relK.getEndNode().getProperty("name"));
-                    }
-                    break;
-                }
-            }
-            tx.success();
-            tx.finish();
-        }
-    }
-
-    public String getSelectedNotRelatedEmployee()
-    {
-        return this.listNotRelativeEmployees.getSelectionModel().getSelectedItem();
-    }
-
-    public String getSelectedRelatedEmployee()
-    {
-        return this.listRelativeEmployees.getSelectionModel().getSelectedItem();
-    }
-
-    public void setSelectedNotRelatedEmployee(String selectedNotRelatedEmployee)
-    {
-        this.selectedNotRelatedEmployee = selectedNotRelatedEmployee;
-    }
-	// todo: to implement
 	public void showRelatedEmployees(String employee) {
 		System.out.println("show relative employees to " + employee);
 		listRelativeEmployees.getItems().clear();
@@ -260,5 +209,18 @@ public void insertEmployees() {
 			tx.success();
 			tx.finish();
 		}
+	}
+
+	public String getSelectedNotRelatedEmployee() {
+		return this.listNotRelativeEmployees.getSelectionModel()
+				.getSelectedItem();
+	}
+
+	public String getSelectedRelatedEmployee() {
+		return this.listRelativeEmployees.getSelectionModel().getSelectedItem();
+	}
+
+	public String getSelectedEmployee() {
+		return listEmployees.getSelectionModel().getSelectedItem();
 	}
 }

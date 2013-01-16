@@ -6,31 +6,27 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class SaxnetApplication extends Application
-{
+public class SaxnetApplication extends Application {
 
-    public static Stage stage;
+	public static Stage stage;
 
-    public static void main(String[] args)
-    {
-        launch(args);
-    }
+	public static void main(String[] args) {
+		launch(args);
+	}
 
-    @Override
-    public void start(Stage _stage) throws Exception
-    {
-        stage = _stage;
-        Parent root = FXMLLoader.load(getClass().getResource("saxnet.fxml"));
+	@Override
+	public void start(Stage _stage) throws Exception {
+		stage = _stage;
+		Parent root = FXMLLoader.load(getClass().getResource("saxnet.fxml"));
 
-        stage.setTitle("Saxnet");
-        stage.setScene(new Scene(root));
-        stage.show();
-    }
+		stage.setTitle("Saxnet");
+		stage.setScene(new Scene(root));
+		stage.show();
+	}
 
-    @Override
-    public void stop() throws Exception
-    {
-        super.stop();
-        NeoDB.getInstance().shutdown();
-    }
+	@Override
+	public void stop() throws Exception {
+		super.stop();
+		NeoDB.getInstance().shutdown();
+	}
 }
