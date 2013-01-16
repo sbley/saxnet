@@ -9,16 +9,19 @@ import javafx.stage.Stage;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
-public class SaxnetApplication extends Application {
-
-	private GraphDatabaseService graphDb;
+public class SaxnetApplication extends Application
+{
+    public static Stage stage;
+    //private GraphDatabaseService graphDb;
 
 	public static void main(String[] args) {
 		launch(args);
 	}
 
 	@Override
-	public void start(Stage stage) throws Exception {
+    public void start(Stage _stage) throws Exception
+    {
+        stage = _stage;
 
 		graphDb = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(
 				"target/database/location").newGraphDatabase();
