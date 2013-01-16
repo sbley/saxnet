@@ -8,7 +8,7 @@
 <?import org.tbee.javafx.scene.layout.fxml.*?>
 
 <MigPane id="AnchorPane"
-         prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"
+         prefHeight="700.0" prefWidth="1024.0" xmlns:fx="http://javafx.com/fxml"
          layout="" cols="[fill,grow]20::[fill,grow]" rows="[fill,grow][]"
          fx:controller="de.saxsys.saxnet.SaxnetController">
 
@@ -20,14 +20,22 @@
         <Button id="btnEdit" fx:id="btnEdit" onAction="#handleEditEmployee" text="#"/>
     </MigPane>
 
-    <MigPane layout="ins 0, flowx" cols="[][][][fill,grow]" rows="[][fill,grow][]">
-        <Label text="Relative Employees" MigPane.cc="spanx 4"></Label>
-        <ListView fx:id="listRelativeEmployees" MigPane.cc="newline,grow, spanx 4"/>
-        <!--
-        <Button id="btnAdd" fx:id="btnCreate" onAction="#handleCreateEmployee" text="+" MigPane.cc="newline"/>
-        <Button id="btnRemove" fx:id="btnRemove" onAction="#handleRemoveEmployee" text="-"/>
-        <Button id="btnEdit" fx:id="btnEdit" onAction="#handleEditEmployee" text="#"/>
-        //-->
+    <MigPane layout="ins 0, flowx" cols="[fill,grow][center][fill,grow]" rows="[fill,grow,center]">
+
+        <MigPane layout="ins 0, flowx" cols="[][][][fill,grow]" rows="[][fill,grow][]" MigPane.cc="grow">
+            <Label text="Relative Employees" MigPane.cc="spanx 4"></Label>
+            <ListView fx:id="listRelativeEmployees" MigPane.cc="newline,grow, spanx 4"/>
+        </MigPane>
+
+        <VBox MigPane.cc="center,grow">
+            <Button fx:id="btnCreateRelation" onAction="#handleCreateRelation" text="L" MigPane.cc=""/>
+            <Button fx:id="btnRemoveRelation" onAction="#handleRemoveRelation" text="R" MigPane.cc=""/>
+        </VBox>
+
+        <MigPane layout="ins 0, flowx" cols="[][][][fill,grow]" rows="[][fill,grow][]" MigPane.cc="grow">
+            <Label text="Not relative Employees" MigPane.cc="spanx 4"></Label>
+            <ListView fx:id="listNotRelativeEmployees" MigPane.cc="newline,grow, spanx 4"/>
+        </MigPane>
     </MigPane>
 
 </MigPane>
