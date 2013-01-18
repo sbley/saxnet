@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -28,6 +29,7 @@ import de.saxsys.saxnet.fx.AddPopup;
 import de.saxsys.saxnet.fx.AddPopupCallback;
 import fr.brouillard.javafx.weld.StartupScene;
 
+@Singleton
 public class SaxnetController implements Initializable {
 	@FXML
 	private ListView<String> listEmployees;
@@ -67,7 +69,7 @@ public class SaxnetController implements Initializable {
 						ReadOnlyObjectProperty<String> prop = (ReadOnlyObjectProperty<String>) observable;
 						String employee = prop.getValue();
 						showRelatedEmployees(employee);
-						// TODO showNotRelatedEmployees(employee);
+						showNotRelatedEmployees(employee);
 					}
 				});
 	}
@@ -102,18 +104,20 @@ public class SaxnetController implements Initializable {
 		}
 
 		popup.show(btnCreate, x, y);
-
 	}
 
 	public void createEmployee(String name) {
 		Transaction tx = neo4j.db().beginTx();
-		Node node = neo4j.db().createNode();
-		Node companyNode = neo4j.db().getNodeById(0);
-		node.setProperty("name", name);
-		node.createRelationshipTo(companyNode, RelTypes.WORKS_AT);
-		tx.success();
-		tx.finish();
-		listEmployees.getItems().add(name);
+		try {
+			Node node = neo4j.db().createNode();
+			Node companyNode = neo4j.db().getNodeById(0);
+			node.setProperty("name", name);
+			node.createRelationshipTo(companyNode, RelTypes.WORKS_AT);
+			tx.success();
+			listEmployees.getItems().add(name);
+		} finally {
+			tx.finish();
+		}
 	}
 
 	@FXML
@@ -149,22 +153,25 @@ public class SaxnetController implements Initializable {
 
 	@FXML
 	public void handleRemoveEmployee() {
-		listEmployees.getItems().remove(this.getSelectedEmployee());
 		Transaction tx = neo4j.db().beginTx();
-		Node companyNode = neo4j.db().getNodeById(0);
-		for (Relationship relWorksAt : companyNode.getRelationships()) {
-			if (this.getSelectedEmployee().equals(
-					(String) relWorksAt.getStartNode().getProperty("name"))) {
-				for (Relationship rel : relWorksAt.getStartNode()
-						.getRelationships()) {
-					rel.delete();
+		try {
+			Node companyNode = neo4j.db().getNodeById(0);
+			for (Relationship relWorksAt : companyNode.getRelationships()) {
+				if (this.getSelectedEmployee().equals(
+						(String) relWorksAt.getStartNode().getProperty("name"))) {
+					for (Relationship rel : relWorksAt.getStartNode()
+							.getRelationships()) {
+						rel.delete();
+					}
+					relWorksAt.getStartNode().delete();
+					break;
 				}
-				relWorksAt.getStartNode().delete();
-				break;
 			}
+			tx.success();
+			listEmployees.getItems().remove(this.getSelectedEmployee());
+		} finally {
+			tx.finish();
 		}
-		tx.success();
-		tx.finish();
 	}
 
 	/**
@@ -174,58 +181,96 @@ public class SaxnetController implements Initializable {
 	@FXML
 	public void handleCreateRelation() {
 		Transaction tx = neo4j.db().beginTx();
-		Node companyNode = neo4j.db().getNodeById(0);
-		Node selectedEmployeeNode = null;
-		Node selectedNotRelatedEmployeeNode = null;
-		for (Relationship relWorksAt : companyNode.getRelationships()) {
-			if (this.getSelectedEmployee().equals(
-					(String) relWorksAt.getStartNode().getProperty("name"))) {
-				selectedEmployeeNode = relWorksAt.getStartNode();
-			} else if (this.getSelectedNotRelatedEmployee().equals(
-					(String) relWorksAt.getStartNode().getProperty("name"))) {
-				selectedNotRelatedEmployeeNode = relWorksAt.getStartNode();
+		try {
+			Node companyNode = neo4j.db().getNodeById(0);
+			Node selectedEmployeeNode = null;
+			Node selectedNotRelatedEmployeeNode = null;
+			for (Relationship relWorksAt : companyNode.getRelationships()) {
+				if (this.getSelectedEmployee().equals(
+						(String) relWorksAt.getStartNode().getProperty("name"))) {
+					selectedEmployeeNode = relWorksAt.getStartNode();
+				} else if (this.getSelectedNotRelatedEmployee().equals(
+						(String) relWorksAt.getStartNode().getProperty("name"))) {
+					selectedNotRelatedEmployeeNode = relWorksAt.getStartNode();
+				}
 			}
+			selectedEmployeeNode.createRelationshipTo(
+					selectedNotRelatedEmployeeNode, RelTypes.KNOWS);
+			tx.success();
+			showRelatedEmployees(getSelectedEmployee());
+			showNotRelatedEmployees(getSelectedEmployee());
+		} finally {
+			tx.finish();
 		}
-
-		selectedEmployeeNode.createRelationshipTo(
-				selectedNotRelatedEmployeeNode, RelTypes.KNOWS);
-		tx.success();
-		tx.finish();
-
 	}
 
 	@FXML
 	public void handleRemoveRelation() {
-		String employee = this.getSelectedEmployee();
-		String relatedPerson = this.getSelectedRelatedEmployee();
-
-		System.out.println("relatedPerson = " + relatedPerson);
-
-		// TODO: remove relation in DB
-
-	}
-
-	public void showRelatedEmployees(String employee) {
-		System.out.println("show relative employees to " + employee);
-		listRelativeEmployees.getItems().clear();
-		if (null != employee) {
-			Transaction tx = neo4j.db().beginTx();
+		Transaction tx = neo4j.db().beginTx();
+		try {
 			Node companyNode = neo4j.db().getNodeById(0);
-			for (Relationship rel : companyNode.getRelationships()) {
-				if (employee.equals((String) rel.getStartNode().getProperty(
-						"name"))) {
-					Iterable<Relationship> relKnows = rel.getStartNode()
-							.getRelationships(RelTypes.KNOWS,
-									Direction.OUTGOING);
-					for (Relationship relK : relKnows) {
-						listRelativeEmployees.getItems().add(
-								(String) relK.getEndNode().getProperty("name"));
-					}
+			Node selectedEmployeeNode = null;
+			Node selectedRelatedEmployeeNode = null;
+			for (Relationship relWorksAt : companyNode.getRelationships()) {
+				if (this.getSelectedEmployee().equals(
+						(String) relWorksAt.getStartNode().getProperty("name"))) {
+					selectedEmployeeNode = relWorksAt.getStartNode();
+				} else if (this.getSelectedRelatedEmployee().equals(
+						(String) relWorksAt.getStartNode().getProperty("name"))) {
+					selectedRelatedEmployeeNode = relWorksAt.getStartNode();
+				}
+			}
+			Iterable<Relationship> rels = selectedEmployeeNode
+					.getRelationships(RelTypes.KNOWS, Direction.BOTH);
+			for (Relationship relKnows : rels) {
+				if (selectedRelatedEmployeeNode.equals(relKnows.getEndNode())) {
+					relKnows.delete();
 					break;
 				}
 			}
 			tx.success();
+			showRelatedEmployees(getSelectedEmployee());
+			showNotRelatedEmployees(getSelectedEmployee());
+		} finally {
 			tx.finish();
+		}
+	}
+
+	private void showRelatedEmployees(String employee) {
+		System.out.println("show relative employees to " + employee);
+		listRelativeEmployees.getItems().clear();
+		if (null != employee) {
+			Transaction tx = neo4j.db().beginTx();
+			try {
+				Node companyNode = neo4j.db().getNodeById(0);
+				for (Relationship rel : companyNode.getRelationships()) {
+					if (employee.equals((String) rel.getStartNode()
+							.getProperty("name"))) {
+						Iterable<Relationship> relKnows = rel.getStartNode()
+								.getRelationships(RelTypes.KNOWS,
+										Direction.OUTGOING);
+						for (Relationship relK : relKnows) {
+							listRelativeEmployees.getItems().add(
+									(String) relK.getEndNode().getProperty(
+											"name"));
+						}
+						break;
+					}
+				}
+				tx.success();
+			} finally {
+				tx.finish();
+			}
+		}
+	}
+
+	private void showNotRelatedEmployees(String employee) {
+		listNotRelativeEmployees.getItems().clear();
+		listNotRelativeEmployees.getItems().addAll(listEmployees.getItems());
+		listNotRelativeEmployees.getItems().removeAll(
+				listRelativeEmployees.getItems());
+		if (null != employee) {
+			listNotRelativeEmployees.getItems().remove(employee);
 		}
 	}
 
@@ -243,7 +288,6 @@ public class SaxnetController implements Initializable {
 	}
 
 	public void setStage(@Observes @StartupScene Stage stage) {
-		// FIXME stage is null when clicking on [+] button
 		this.stage = stage;
 	}
 }
